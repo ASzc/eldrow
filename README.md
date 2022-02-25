@@ -42,6 +42,16 @@ options:
                         .b... ....s (default: .....)
 ```
 
+## Generating word lists
+
+There are many wordlists available on the internet. To make a general purpose wordlist work for Wordle, you need to narrow the number of letters to exactly 5. This is easily done with grep:
+
+```
+grep '^.....$' raw/twl06.txt > wordlist.txt
+```
+
+Eldrow is capable of handling other lengths than 5, if desired. You must generate a wordlist to match, and set the `-k` option with an appropriate number of periods.
+
 ## License
 
 This software is available under the AGPL v3. See the license header in the source code for details.
