@@ -77,9 +77,57 @@ def suggest_words(wordlist: list[str], contains_letters: str, uncontained_letter
     # priority)
     uncontained = uncontained.difference(contained)
 
-    # TODO
+    # Precalculate booleans for parameter filters
+    any_contained = bool(contained)
+    any_uncontained = bool(uncontained)
+    any_known = any(known)
 
-    return suggestions
+    # Apply all the parameters as filters on the wordlist
+    narrow = []
+    for word in wordlist:
+        characters = set(word)
+
+        copy = True
+        if any_contained and contained.isdisjoint(characters):
+            # Example:
+            # contained = {"a"}
+            # characters = {"a", "b", "o", "r", "t"}
+            # -> yes copy, test next parameter
+            #
+            # Example:
+            # contained = {"x"}
+            # characters = {"a", "b", "o", "r", "t"}
+            # -> no copy
+            copy = False
+        elif any_uncontained and not uncontained.isdisjoint(characters):
+            # Example:
+            # uncontained = {"a"}
+            # characters = {"a", "b", "o", "r", "t"}
+            # -> no copy
+            #
+            # Example:
+            # uncontained = {"x"}
+            # characters = {"a", "b", "o", "r", "t"}
+            # -> yes copy, test next parameter
+            copy = False
+        elif any_known and any( wk[0] == wk[1] for wk in zip(known, word)):
+            # Example:
+            # known = ["a",  None,  None,  None,  None ]
+            # word =  ["a",  "b",   "o",   "r",   "t"  ]
+            # -> any  (True, False, False, False, False)
+            # -> yes copy
+            #
+            # Example:
+            # known = ["x",  None,  None,  None,  None ]
+            # word =  ["a",  "b",   "o",   "r",   "t"  ]
+            # -> any  (False, False, False, False, False)
+            # -> no copy
+            copy = False
+
+        if copy:
+            narrow.append(word)
+
+    return narrow
 
 #
 # Main
