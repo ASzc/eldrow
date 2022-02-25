@@ -115,18 +115,10 @@ def suggest_words(wordlist: list[str], contains_letters: str, uncontained_letter
             # characters = {"a", "b", "o", "r", "t"}
             # -> yes copy, test next parameter
             copy = False
-        elif any_known and not any( wk[0] == wk[1] for wk in zip(known, word)):
-            # Example:
-            # known = ["a",  None,  None,  None,  None ]
-            # word =  ["a",  "b",   "o",   "r",   "t"  ]
-            # -> any  (True, False, False, False, False)
-            # -> yes copy
-            #
-            # Example:
-            # known = ["x",  None,  None,  None,  None ]
-            # word =  ["a",  "b",   "o",   "r",   "t"  ]
-            # -> any  (False, False, False, False, False)
-            # -> no copy
+        elif any_known and any( k != w for k, w in zip(known, word) if k):
+            #for k, w in zip(known, word):
+            #    if k and k != w:
+            #        return False
             copy = False
 
         if copy:
