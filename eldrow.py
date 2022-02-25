@@ -21,23 +21,39 @@
 import argparse
 import os
 import os.path
+import string
 import sys
 
 #
 # Wordlist Prep
 #
 
-def read_wordlist(words: list[str]) -> dict:
-    wordlist = dict()
-
+def read_wordlist(words: list[str]) -> list[str]:
     # Determine columns/length
-    # TODO
+    columns = len(words[0])
+    for word in words:
+        assert len(word) == columns, "Wordlist does not have a consistent word length"
 
-    # Sort by column/letter coincidence index
-    # TODO
+    # Sort by column/letter coincidence index.
+    # First pass: count how many times a letter appears in each column
+    # throughout all the words
+    letter_appears = { l: [0] * columns for l in string.ascii_lowercase }
+    for word in words:
+        for column, letter in enumerate(word):
+            letter_appears[letter][column] += 1
+    # Second pass: for each word, use the predetermined counts on each column
+    # to sum a coincidence index
+    scores = list()
+    for word in words:
+        score = sum( letter_appears[l][c] for c, l in enumerate(word) )
+        scores.append(score)
 
+    # Sort word list by coincidence index
+    words_and_scores = zip(words, scores)
+    sorted_words_and_scores = sorted(words_and_scores, key=lambda ws: ws[1])
+    sorted_words = list(zip(*sorted_words_and_scores))[0]
 
-    return wordlist
+    return sorted_words
 
 #
 # Solver
@@ -46,16 +62,20 @@ def read_wordlist(words: list[str]) -> dict:
 def parse_known_positions(raw: str) -> list[str]:
     return list(i if i.isalpha() else None for i in raw)
 
-def suggest_words(wordlist: dict, contains_letters: str, uncontained_letters: str, known_positions: str) -> list[str]:
+def suggest_words(wordlist: list[str], contains_letters: str, uncontained_letters: str, known_positions: str) -> list[str]:
     contained = set(contains_letters)
     uncontained = set(uncontained_letters)
     known = parse_known_positions(known_positions)
 
     # Ensure contained has the letters from known as well
-    assert wordlist["columns"] == len(known)
+    assert len(wordlist[0]) == len(known), "Known positions does not have the same length as the wordlist's words"
     for k in known:
         if k:
             contained.add(k)
+
+    # Ensure uncontained is consistent with contained (contained takes
+    # priority)
+    uncontained = uncontained.difference(contained)
 
     # TODO
 
@@ -80,7 +100,7 @@ def arg_parser():
     parser.add_argument("-l", "--limit", type=int, default=10, help="Change the default maximum number of suggested words")
     parser.add_argument("-w", "--wordlist", type=file_exists, default="wordlist.txt", help="Change the default path of the wordlist file")
     parser.add_argument("-p", "--present", default="", help="Specify any letters that are known to exist somewhere in the word. Order doesn't matter.")
-    parser.add_argument("-n", "--not-present", default="", help="Specify any letters that are known to not exist anywhere in the word. Order doesn't matter.")
+    parser.add_argument("-n", "--not-present", default="", help="Specify any letters that are known to not exist anywhere in the word. Any letters specified in the list of present letters will override letters specified here. Order doesn't matter.")
     parser.add_argument("-k", "--known-positions", default=".....", help="Specify any positions/columns that are known to contain a particular letter. Use a period character (or any other non-letter) to specify unknown positions. Any letters specified here will also be added to the list of present letters. Must be the same length as the words in the wordlist. Examples: a..ot .b... ....s")
 
     return parser
@@ -89,10 +109,10 @@ def main(raw_args):
     parser = arg_parser()
     args = parser.parse_args(raw_args)
 
-    # Read wordlist, ignoring whitespace
+    # Read wordlist, ignoring whitespace, and normalizing case
     with open(args.wordlist, "r") as f:
-        lines = (line.strip() for line in f)
-        raw_wordlist = list(line for line in lines if line)
+        lines = ( line.strip() for line in f )
+        raw_wordlist = list( line.lower() for line in lines if line )
     # Parse it
     wordlist = read_wordlist(raw_wordlist)
 
