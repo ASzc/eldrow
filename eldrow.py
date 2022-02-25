@@ -88,7 +88,7 @@ def suggest_words(wordlist: list[str], contains_letters: str, uncontained_letter
         characters = set(word)
 
         copy = True
-        if any_contained and contained.isdisjoint(characters):
+        if any_contained and not contained.issubset(characters):
             # Example:
             # contained = {"a"}
             # characters = {"a", "b", "o", "r", "t"}
@@ -110,7 +110,7 @@ def suggest_words(wordlist: list[str], contains_letters: str, uncontained_letter
             # characters = {"a", "b", "o", "r", "t"}
             # -> yes copy, test next parameter
             copy = False
-        elif any_known and any( wk[0] == wk[1] for wk in zip(known, word)):
+        elif any_known and not any( wk[0] == wk[1] for wk in zip(known, word)):
             # Example:
             # known = ["a",  None,  None,  None,  None ]
             # word =  ["a",  "b",   "o",   "r",   "t"  ]
@@ -133,12 +133,6 @@ def suggest_words(wordlist: list[str], contains_letters: str, uncontained_letter
 # Main
 #
 
-def file_exists(parser, arg):
-    if not os.path.exists(arg):
-        parser.error(f"The file {arg} does not exist!")
-    else:
-        return arg
-
 def arg_parser():
     parser = argparse.ArgumentParser(
         description="Given the state of a Wordle game, and a wordlist, suggest one or more possible solutions",
@@ -146,7 +140,7 @@ def arg_parser():
     )
     parser.add_argument("-o", "--output", help="Write the suggested word(s) to a file instead of stdout")
     parser.add_argument("-l", "--limit", type=int, default=10, help="Change the default maximum number of suggested words")
-    parser.add_argument("-w", "--wordlist", type=file_exists, default="wordlist.txt", help="Change the default path of the wordlist file")
+    parser.add_argument("-w", "--wordlist", default="wordlist.txt", help="Change the default path of the wordlist file")
     parser.add_argument("-p", "--present", default="", help="Specify any letters that are known to exist somewhere in the word. Order doesn't matter.")
     parser.add_argument("-n", "--not-present", default="", help="Specify any letters that are known to not exist anywhere in the word. Any letters specified in the list of present letters will override letters specified here. Order doesn't matter.")
     parser.add_argument("-k", "--known-positions", default=".....", help="Specify any positions/columns that are known to contain a particular letter. Use a period character (or any other non-letter) to specify unknown positions. Any letters specified here will also be added to the list of present letters. Must be the same length as the words in the wordlist. Examples: a..ot .b... ....s")
