@@ -41,6 +41,9 @@ def read_wordlist(words: list[str]):
     for word in words:
         for column, letter in enumerate(word):
             letter_appears[letter][column] += 1
+    #import pprint
+    #pprint.pprint(letter_appears)
+
     # Second pass: for each word, use the predetermined counts on each column
     # to sum a coincidence index
     scores = list()
