@@ -28,7 +28,7 @@ import sys
 # Wordlist Prep
 #
 
-def read_wordlist(words: list[str]) -> list[str]:
+def read_wordlist(words: list[str]):
     # Determine columns/length
     columns = len(words[0])
     for word in words:
@@ -50,10 +50,12 @@ def read_wordlist(words: list[str]) -> list[str]:
 
     # Sort word list by coincidence index
     words_and_scores = zip(words, scores)
-    sorted_words_and_scores = sorted(words_and_scores, key=lambda ws: ws[1])
+    sorted_words_and_scores = sorted(words_and_scores, key=lambda ws: ws[1], reverse=True)
     sorted_words = list(zip(*sorted_words_and_scores))[0]
 
-    return sorted_words
+    scores_by_word = { w: s for w, s in sorted_words_and_scores }
+
+    return sorted_words, scores_by_word
 
 #
 # Solver
@@ -140,6 +142,7 @@ def arg_parser():
     )
     parser.add_argument("-o", "--output", help="Write the suggested word(s) to a file instead of stdout")
     parser.add_argument("-l", "--limit", type=int, default=10, help="Change the default maximum number of suggested words")
+    parser.add_argument("-s", "--show-score", action="store_true", help="Show the coincidence score alongside each suggested word")
     parser.add_argument("-w", "--wordlist", default="wordlist.txt", help="Change the default path of the wordlist file")
     parser.add_argument("-p", "--present", default="", help="Specify any letters that are known to exist somewhere in the word. Order doesn't matter.")
     parser.add_argument("-n", "--not-present", default="", help="Specify any letters that are known to not exist anywhere in the word. Any letters specified in the list of present letters will override letters specified here. Order doesn't matter.")
@@ -156,16 +159,22 @@ def main(raw_args):
         lines = ( line.strip() for line in f )
         raw_wordlist = list( line.lower() for line in lines if line )
     # Parse it
-    wordlist = read_wordlist(raw_wordlist)
+    wordlist, scores_by_word = read_wordlist(raw_wordlist)
 
     # Generate all suggestions
     suggestions = suggest_words(wordlist, args.present, args.not_present, args.known_positions)
+
+    # Determine zero padding requirements
+    zpad = max( len(str(score)) for score in ( scores_by_word[suggestion] for suggestion in suggestions ) )
 
     # Write a portion of these suggestions to the output
     def write(f):
         for i, suggestion in enumerate(suggestions):
             if i >= args.limit:
                 break
+            if args.show_score:
+                f.write(str(scores_by_word[suggestion]).zfill(zpad))
+                f.write(" ")
             f.write(suggestion)
             f.write("\n")
     if args.output:
