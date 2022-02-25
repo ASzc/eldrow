@@ -160,7 +160,8 @@ def main(raw_args):
     suggestions = suggest_words(wordlist, args.present, args.not_present, args.known_positions)
 
     # Determine zero padding requirements
-    zpad = max( len(str(score)) for score in ( scores_by_word[suggestion] for suggestion in suggestions ) )
+    if suggestions:
+        zpad = max( len(str(score)) for score in ( scores_by_word[suggestion] for suggestion in suggestions ) )
 
     # Write a portion of these suggestions to the output
     def write(f):
