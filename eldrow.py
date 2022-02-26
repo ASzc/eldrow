@@ -139,8 +139,8 @@ def interperet_game_raw(raw_moves: list[str]) -> dict:
         length = len(raw_moves[0])
         assert all(len(m) == length for m in raw_moves), "Moves are not all the same length"
         assert len(raw_moves) % 2 == 0, "Moves are not all paired with a response, odd number of total elements"
-        moves = list(m.lower() for m in raw_moves[::2])
-        responses = list(r.lower() for r in raw_moves[1::2])
+        moves = list(raw_moves[::2])
+        responses = list(raw_moves[1::2])
     else:
         length = 5
         moves = []
@@ -196,14 +196,54 @@ def interperet_game(moves_and_responses: list) -> dict:
     }
 
 #
+# Game Simulation
+#
+
+def compare(target, guess):
+    length = len(target)
+    assert len(guess) == length, "Guess not the same length as the target word"
+
+    response = []
+
+    characters = dict()
+    for character in target:
+        if character not in characters:
+            characters[character] = 0
+        characters[character] += 1
+
+    indexes = list(range(0, length))
+    response = ["b"] * length
+
+    for t, g, i in zip(target, guess, indexes):
+        if t == g:
+            response[i] = "g"
+            characters[g] -= 1
+
+    for t, g, i in zip(target, guess, indexes):
+        if t != g and g in characters and characters[g] >= 1:
+            response[i] = "y"
+            characters[g] -= 1
+
+    return "".join(response)
+
+#
 # Main
 #
+
+def wword(s):
+    if isinstance(s, list):
+        assert all(w.isalpha() for w in s)
+        return list( s.lower().strip() for w in s )
+    else:
+        assert s.isalpha()
+        return s.lower().strip()
 
 def arg_parser():
     root_parser = argparse.ArgumentParser(
         description="Tool for solving Wordle word puzzles",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
+    root_parser.set_defaults(which="")
     subparsers = root_parser.add_subparsers()
 
     def addargs_su_ga(parser):
@@ -233,7 +273,17 @@ def arg_parser():
     )
     parser.set_defaults(which="game")
     addargs_su_ga(parser)
-    parser.add_argument("moves", nargs="*", default=[], metavar="MOVE RESPONSE", help="A move followed by the response from Wordle. There should be an even number of arguments. Use y for yellow, g for green, b for black. Ex: abort ygbbb")
+    parser.add_argument("moves", nargs="*", type=wword, default=[], metavar="MOVE RESPONSE", help="A move followed by the response from Wordle. There should be an even number of arguments. Use y for yellow, g for green, b for black. Ex: abort ygbbb")
+
+    parser = subparsers.add_parser(
+        "compare",
+        aliases=["co"],
+        help="Given a target word and a guess, print Wordle YGB syntax",
+        description="Given a target word and a guess, print Wordle YGB syntax",
+    )
+    parser.set_defaults(which="compare")
+    parser.add_argument("target", type=wword, help="Word that is the target")
+    parser.add_argument("guess", type=wword, help="An attempt at guessing the target word. Must be the same length as the target word")
 
     return root_parser
 
@@ -241,12 +291,13 @@ def main(raw_args):
     parser = arg_parser()
     args = parser.parse_args(raw_args)
 
-    # Read wordlist, ignoring whitespace, and normalizing case
-    with open(args.wordlist, "r") as f:
-        lines = ( line.strip() for line in f )
-        raw_wordlist = list( line.lower() for line in lines if line )
-    # Parse it
-    wordlist, scores_by_word = read_wordlist(raw_wordlist)
+    if "wordlist" in args:
+        # Read wordlist, ignoring whitespace, and normalizing case
+        with open(args.wordlist, "r") as f:
+            lines = ( line.strip() for line in f )
+            raw_wordlist = list( line.lower() for line in lines if line )
+        # Parse it
+        wordlist, scores_by_word = read_wordlist(raw_wordlist)
 
     # Run appropriate function based on subcommand used
     if args.which == "suggest":
@@ -257,6 +308,9 @@ def main(raw_args):
             print(f"Game has been {game['status']}", flush=True, file=sys.stderr)
             return 0
         suggestions = suggest_words(wordlist, game["present"], game["not_present"], game["known_positions"], game["known_non_positions"])
+    elif args.which == "compare":
+        print(compare(args.target, args.guess))
+        return 0
     else:
         parser.print_usage()
         return 1
