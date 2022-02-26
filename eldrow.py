@@ -249,7 +249,6 @@ def main(raw_args):
     wordlist, scores_by_word = read_wordlist(raw_wordlist)
 
     # Run appropriate function based on subcommand used
-
     if args.which == "suggest":
         suggestions = suggest_words(wordlist, args.present, args.not_present, args.known_positions, args.known_non_positions)
     elif args.which == "game":
