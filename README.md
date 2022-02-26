@@ -4,10 +4,39 @@ A solver for Wordle puzzles. Suggests words for you to use, based on the current
 
 ## Usage
 
+### game
+
 ```
-usage: eldrow.py [-h] [-o OUTPUT] [-l LIMIT] [-s] [-w WORDLIST] [-p PRESENT]
-                 [-n NOT_PRESENT] [-k KNOWN_POSITIONS]
-                 [-i KNOWN_NON_POSITIONS]
+usage: eldrow.py game [-h] [-o OUTPUT] [-l LIMIT] [-s] [-w WORDLIST]
+                      [MOVE RESPONSE ...]
+
+Given a wordlist, and zero or more previous moves and responses, suggest one
+or more possible solutions
+
+positional arguments:
+  MOVE RESPONSE         A move followed by the response from Wordle. There
+                        should be an even number of arguments. Use y for
+                        yellow, g for green, b for black. Ex: abort ygbbb
+
+options:
+  -h, --help            show this help message and exit
+  -o OUTPUT, --output OUTPUT
+                        Write the suggested word(s) to a file instead of
+                        stdout
+  -l LIMIT, --limit LIMIT
+                        Change the default maximum number of suggested words
+  -s, --show-score      Show the coincidence score alongside each suggested
+                        word
+  -w WORDLIST, --wordlist WORDLIST
+                        Change the default path of the wordlist file
+```
+
+### suggest
+
+```
+usage: eldrow.py suggest [-h] [-o OUTPUT] [-l LIMIT] [-s] [-w WORDLIST]
+                         [-p PRESENT] [-n NOT_PRESENT] [-k KNOWN_POSITIONS]
+                         [-i KNOWN_NON_POSITIONS]
 
 Given the state of a Wordle game, and a wordlist, suggest one or more possible
 solutions
@@ -16,23 +45,21 @@ options:
   -h, --help            show this help message and exit
   -o OUTPUT, --output OUTPUT
                         Write the suggested word(s) to a file instead of
-                        stdout (default: None)
+                        stdout
   -l LIMIT, --limit LIMIT
                         Change the default maximum number of suggested words
-                        (default: 10)
   -s, --show-score      Show the coincidence score alongside each suggested
-                        word (default: False)
+                        word
   -w WORDLIST, --wordlist WORDLIST
-                        Change the default path of the wordlist file (default:
-                        wordlist.txt)
+                        Change the default path of the wordlist file
   -p PRESENT, --present PRESENT
                         Specify any letters that are known to exist somewhere
-                        in the word. Order doesn't matter. (default: )
+                        in the word. Order doesn't matter.
   -n NOT_PRESENT, --not-present NOT_PRESENT
                         Specify any letters that are known to not exist
                         anywhere in the word. Any letters specified in the
                         list of present letters will override letters
-                        specified here. Order doesn't matter. (default: )
+                        specified here. Order doesn't matter.
   -k KNOWN_POSITIONS, --known-positions KNOWN_POSITIONS
                         Specify any positions/columns that are known to
                         contain a particular letter. Use a period character
@@ -40,13 +67,12 @@ options:
                         positions. Any letters specified here will also be
                         added to the list of present letters. Must be the same
                         length as the words in the wordlist. Examples: a..ot
-                        .b... ....s (default: .....)
+                        .b... ....s
   -i KNOWN_NON_POSITIONS, --known-non-positions KNOWN_NON_POSITIONS
                         Specify any positions/columns that are known to NOT
                         contain a particular letter. Multiple overlapping
                         patterns can be entered via sequential uses of this
-                        argument. Same syntax as --known-positions (default:
-                        ['.....'])
+                        argument. Same syntax as --known-positions
 ```
 
 ## Generating word lists
