@@ -44,6 +44,12 @@ options:
 
 ## Generating word lists
 
+### Official
+
+The official wordlists can be extracted from the javascript source code available from the wordle page. There is one for valid answers, and one for all accepted input words. See `official-answer-wordlist.txt` and `official-support-wordlist.txt`.
+
+### General Purpose
+
 There are many wordlists available on the internet. To make a general purpose wordlist work for Wordle, you need to narrow the number of letters to exactly 5. This is easily done with grep:
 
 ```
