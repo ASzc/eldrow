@@ -151,8 +151,15 @@ def interperet_game_raw(raw_moves: list[str]) -> dict:
 def interperet_game(moves_and_responses: list) -> dict:
     if len(moves_and_responses) > 0:
         length = len(moves_and_responses[0][0])
+
+        status = "open"
+        if moves_and_responses[-1][1] == "g" * length:
+            status = "won"
+        elif len(moves_and_responses) >= 6:
+            status = "lost"
     else:
         length = 5
+        status = "open"
     indexes = list(range(0, length))
 
     contained = set()
@@ -179,12 +186,6 @@ def interperet_game(moves_and_responses: list) -> dict:
 
         if not all(e == "." for e in kn):
             known_not.append("".join(kn))
-
-    status = "open"
-    if moves_and_responses[-1][1] == "g" * length:
-        status = "won"
-    elif len(moves_and_responses) >= 6:
-        status = "lost"
 
     return {
         "present": "".join(sorted(contained)),
