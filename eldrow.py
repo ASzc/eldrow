@@ -78,9 +78,6 @@ def suggest_words(wordlist: list[str], contains_letters: str, uncontained_letter
     for k in known:
         if k:
             contained.add(k)
-    for k in known_not:
-        if k:
-            uncontained.add(k)
 
     # Ensure uncontained is consistent with contained (contained takes
     # priority)
