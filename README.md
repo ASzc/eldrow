@@ -43,8 +43,10 @@ options:
                         .b... ....s (default: .....)
   -i KNOWN_NON_POSITIONS, --known-non-positions KNOWN_NON_POSITIONS
                         Specify any positions/columns that are known to NOT
-                        contain a particular letter. Same syntax as --known-
-                        positions (default: .....)
+                        contain a particular letter. Multiple overlapping
+                        patterns can be entered via sequential uses of this
+                        argument. Same syntax as --known-positions (default:
+                        ['.....'])
 ```
 
 ## Generating word lists

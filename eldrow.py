@@ -67,11 +67,11 @@ def read_wordlist(words: list[str]):
 def parse_known_positions(raw: str) -> list[str]:
     return list(i if i.isalpha() else None for i in raw)
 
-def suggest_words(wordlist: list[str], contains_letters: str, uncontained_letters: str, known_positions: str, known_non_positions: str) -> list[str]:
+def suggest_words(wordlist: list[str], contains_letters: str, uncontained_letters: str, known_positions: str, known_non_positions: list[str]) -> list[str]:
     contained = set(contains_letters)
     uncontained = set(uncontained_letters)
     known = parse_known_positions(known_positions)
-    known_not = parse_known_positions(known_non_positions)
+    known_not = list( parse_known_positions(k) for k in known_non_positions )
 
     # Ensure (un)contained has the letters from known as well
     assert len(wordlist[0]) == len(known), "Known positions does not have the same length as the wordlist's words"
@@ -87,7 +87,7 @@ def suggest_words(wordlist: list[str], contains_letters: str, uncontained_letter
     any_contained = bool(contained)
     any_uncontained = bool(uncontained)
     any_known = any(known)
-    any_known_not = any(known_not)
+    any_known_not = any(any(kn) for kn in known_not)
 
     # Apply all the parameters as filters on the wordlist
     narrow = []
@@ -117,12 +117,12 @@ def suggest_words(wordlist: list[str], contains_letters: str, uncontained_letter
             # characters = {"a", "b", "o", "r", "t"}
             # -> yes copy, test next parameter
             copy = False
-        elif any_known and any( k != w for k, w in zip(known, word) if k):
+        elif any_known and any( k != w for k, w in zip(known, word) if k ):
             #for k, w in zip(known, word):
             #    if k and k != w:
             #        return False
             copy = False
-        elif any_known_not and any( k == w for k, w in zip(known_not, word) if k):
+        elif any_known_not and any( any( k == w for k, w in zip(kn, word) if k ) for kn in known_not ):
             copy = False
 
         if copy:
@@ -146,7 +146,7 @@ def arg_parser():
     parser.add_argument("-p", "--present", default="", help="Specify any letters that are known to exist somewhere in the word. Order doesn't matter.")
     parser.add_argument("-n", "--not-present", default="", help="Specify any letters that are known to not exist anywhere in the word. Any letters specified in the list of present letters will override letters specified here. Order doesn't matter.")
     parser.add_argument("-k", "--known-positions", default=".....", help="Specify any positions/columns that are known to contain a particular letter. Use a period character (or any other non-letter) to specify unknown positions. Any letters specified here will also be added to the list of present letters. Must be the same length as the words in the wordlist. Examples: a..ot .b... ....s")
-    parser.add_argument("-i", "--known-non-positions", default=".....", help="Specify any positions/columns that are known to NOT contain a particular letter. Same syntax as --known-positions")
+    parser.add_argument("-i", "--known-non-positions", action="append", default=["....."], help="Specify any positions/columns that are known to NOT contain a particular letter. Multiple overlapping patterns can be entered via sequential uses of this argument. Same syntax as --known-positions")
 
     return parser
 
