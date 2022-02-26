@@ -7,6 +7,7 @@ A solver for Wordle puzzles. Suggests words for you to use, based on the current
 ```
 usage: eldrow.py [-h] [-o OUTPUT] [-l LIMIT] [-s] [-w WORDLIST] [-p PRESENT]
                  [-n NOT_PRESENT] [-k KNOWN_POSITIONS]
+                 [-i KNOWN_NON_POSITIONS]
 
 Given the state of a Wordle game, and a wordlist, suggest one or more possible
 solutions
@@ -40,6 +41,10 @@ options:
                         added to the list of present letters. Must be the same
                         length as the words in the wordlist. Examples: a..ot
                         .b... ....s (default: .....)
+  -i KNOWN_NON_POSITIONS, --known-non-positions KNOWN_NON_POSITIONS
+                        Specify any positions/columns that are known to NOT
+                        contain a particular letter. Same syntax as --known-
+                        positions (default: .....)
 ```
 
 ## Generating word lists
