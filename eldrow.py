@@ -226,6 +226,42 @@ def compare(target, guess):
 
     return "".join(response)
 
+def check_completeness(wordlist):
+    games = []
+    for target in wordlist:
+        length = len(target)
+
+        contained = ""
+        uncontained = ""
+        known = "." * length
+        known_not = []
+
+        status = "open"
+        attempts = []
+
+        while status == "open":
+            suggestions = suggest_words(wordlist, contained, uncontained, known, known_not)
+
+            move = suggestions[0]
+            response = compare(target, move)
+            attempt = (move, response)
+            attempts.append(attempt)
+
+            game = interperet_game(attempts)
+            contained = game["present"]
+            uncontained = game["not_present"]
+            known = game["known_positions"]
+            known_not = game["known_non_positions"]
+            status = game["status"]
+
+        games.append({
+            "target": target,
+            "attempts": attempts,
+            "status": status,
+        })
+
+    return games
+
 #
 # Main
 #
@@ -285,6 +321,16 @@ def arg_parser():
     parser.add_argument("target", type=wword, help="Word that is the target")
     parser.add_argument("guess", type=wword, help="An attempt at guessing the target word. Must be the same length as the target word")
 
+    parser = subparsers.add_parser(
+        "complete",
+        aliases=["cl"],
+        help="Check the completeness of eldrow's solving ability against the wordlist",
+        description="Check the completeness of eldrow's solving ability against the wordlist",
+    )
+    parser.set_defaults(which="complete")
+    parser.add_argument("-w", "--wordlist", default="wordlist.txt", help="Change the default path of the wordlist file")
+    parser.add_argument("-o", "--output", help="Write a report to this file")
+
     return root_parser
 
 def main(raw_args):
@@ -311,6 +357,27 @@ def main(raw_args):
     elif args.which == "compare":
         print(compare(args.target, args.guess))
         return 0
+    elif args.which == "complete":
+        print(f"Checking completeness for {len(wordlist)} words", file=sys.stderr)
+        games = check_completeness(wordlist)
+        if args.output:
+            with open(args.output, "w") as f:
+                for game in sorted(games, key=lambda g: g["target"]):
+                    f.write(game["target"])
+                    f.write("\n")
+                    for attempt in game["attempts"]:
+                        f.write(attempt[0])
+                        f.write(" -> ")
+                        f.write(attempt[1])
+                        f.write("\n")
+                    f.write(game["status"])
+                    f.write("\n\n")
+        if all( g["status"] == "won" for g in games ):
+            print("Completeness verified!", file=sys.stderr)
+            return 0
+        else:
+            print("Error: Not complete", file=sys.stderr)
+            return 1
     else:
         parser.print_usage()
         return 1
