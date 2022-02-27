@@ -174,6 +174,7 @@ def interperet_game(moves_and_responses: list) -> dict:
             if r == "b":
                 # b: letter uncontained
                 uncontained.add(m)
+                kn[i] = m
             elif r == "y":
                 # y: letter contained, but not at this position
                 contained.add(m)
@@ -353,6 +354,8 @@ def main(raw_args):
         if game["status"] != "open":
             print(f"Game has been {game['status']}", flush=True, file=sys.stderr)
             return 0
+        #import pprint
+        #pprint.pprint(game)
         suggestions = suggest_words(wordlist, game["present"], game["not_present"], game["known_positions"], game["known_non_positions"])
     elif args.which == "compare":
         print(compare(args.target, args.guess))
