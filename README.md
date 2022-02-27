@@ -75,6 +75,37 @@ options:
                         argument. Same syntax as --known-positions
 ```
 
+### compare
+
+```
+usage: eldrow.py compare [-h] target guess
+
+Given a target word and a guess, print Wordle YGB syntax
+
+positional arguments:
+  target      Word that is the target
+  guess       An attempt at guessing the target word. Must be the same length
+              as the target word
+
+options:
+  -h, --help  show this help message and exit
+```
+
+### complete
+
+```
+usage: eldrow.py complete [-h] [-w WORDLIST] [-o OUTPUT]
+
+Check the completeness of eldrow's solving ability against the wordlist
+
+options:
+  -h, --help            show this help message and exit
+  -w WORDLIST, --wordlist WORDLIST
+                        Change the default path of the wordlist file
+  -o OUTPUT, --output OUTPUT
+                        Write a report to this file
+```
+
 ## Generating word lists
 
 ### Official
